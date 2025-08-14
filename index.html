@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>フィリピンルーレット</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            text-align: center;
+            font-family: sans-serif;
+            background-image: url('https://farm8.staticflickr.com/7143/6485551823_360dd992ef_o.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            transition: background-image 1s ease;
+        }
+
+            body.flash {
+                background-image: url('https://chicodeza.com/wordpress/wp-content/uploads/hanabi-illust1.jpg');
+                background-size: cover;
+                background-repeat: no-repeat;
+                background-position: center 0%; /* ← ここで下にずらす */
+            }
+
+
+        #wheel {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 10px solid #333;
+            margin: 40px auto;
+            position: relative;
+            overflow: hidden;
+            transform: rotate(0deg);
+            transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1);
+            background: conic-gradient(#f99 0deg 120deg, #9f9 120deg 240deg, #99f 240deg 360deg);
+        }
+
+            #wheel.hide {
+                display: none;
+            }
+
+        .segment {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            clip-path: polygon(50% 50%, 100% 0%, 0% 0%);
+            transform-origin: 50% 50%;
+            font-size: 30px;
+            color: white;
+        }
+
+            .segment span {
+                position: absolute;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-40%);
+                font-size: 25px;
+            }
+
+            .segment:nth-child(1) {
+                transform: rotate(0deg);
+                background-color: #f99;
+            }
+
+            .segment:nth-child(2) {
+                transform: rotate(120deg);
+                background-color: #9f9;
+            }
+
+            .segment:nth-child(3) {
+                transform: rotate(240deg);
+                background-color: #99f;
+            }
+
+        #pointer {
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 30px solid red;
+            position: absolute;
+            top: 80px;
+            left: calc(50% - 20px);
+            z-index: 10;
+        }
+
+        #spinBtn {
+            padding: 10px 20px;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        #result {
+            font-size: 20px;
+            margin-top: 10px;
+            color: white;
+            text-shadow: 0 0 5px black;
+        }
+
+        #bigIcon {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            font-size: 100px;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 100;
+            pointer-events: none;
+            color: gold;
+            text-shadow: 0 0 20px white;
+        }
+
+            #bigIcon.show {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(2.5);
+            }
+
+        .sparkle {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: radial-gradient(circle, white 0%, transparent 70%);
+            border-radius: 50%;
+            animation: sparkleAnim 1s ease-out forwards;
+            pointer-events: none;
+            z-index: 99;
+        }
+
+        @keyframes sparkleAnim {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        .hide-all {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="color: white; text-shadow: 0 0 10px #000;">フィリピンルーレット</h1>
+    <div id="content">
+        <div id="pointer"></div>
+        <div id="wheel">
+            <div class="segment"><span>ルソン</span></div>
+            <div class="segment"><span>ビサヤ</span></div>
+            <div class="segment"><span>ミンダナオ</span></div>
+        </div>
+        <button id="spinBtn">回す</button>
+        <p id="result">結果: </p>
+    </div>
+    <div id="bigIcon"></div>
+
+    <script>
+        const wheel = document.getElementById('wheel');
+        const result = document.getElementById('result');
+        const spinBtn = document.getElementById('spinBtn');
+        const bigIcon = document.getElementById('bigIcon');
+        const body = document.body;
+        const content = document.getElementById('content');
+
+        const icons = ['ルソン', 'ビサヤ', 'ミンダナオ'];
+        const segmentAngle = 360 / icons.length;
+
+        let currentRotation = 0;
+
+        function createSparkles() {
+            for (let i = 0; i < 100; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.top = `${Math.random() * window.innerHeight}px`;
+                sparkle.style.left = `${Math.random() * window.innerWidth}px`;
+                document.body.appendChild(sparkle);
+                setTimeout(() => sparkle.remove(), 10000);
+            }
+        }
+
+        spinBtn.addEventListener('click', () => {
+            const randomSpin = Math.floor(Math.random() * 360);
+            const totalRotation = currentRotation + 360 * 5 + randomSpin;
+            wheel.style.transform = `rotate(${totalRotation}deg)`;
+            currentRotation = totalRotation;
+
+            setTimeout(() => {
+                const finalAngle = totalRotation % 360;
+                const index = Math.floor((360 - finalAngle + segmentAngle / 2.7) % 360 / segmentAngle);
+                const selected = icons[index];
+                result.textContent = `結果: ${selected}`;
+
+                bigIcon.textContent = selected;
+                bigIcon.classList.add('show');
+                body.classList.add('flash');
+                wheel.classList.add('hide');
+                content.classList.add('hide-all');
+                createSparkles();
+
+                setTimeout(() => {
+                    bigIcon.classList.remove('show');
+                    body.classList.remove('flash');
+                    wheel.classList.remove('hide');
+                    content.classList.remove('hide-all');
+                }, 5000);
+            }, 4000);
+        });
+    </script>
+</body>
+</html>
+
+
